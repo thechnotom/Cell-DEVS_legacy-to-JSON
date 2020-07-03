@@ -1,0 +1,19 @@
+{
+    "shape" : [38,57,13],
+    "neighbourhood" : "von_neumann",
+    "range" : 1,
+    "walls_only" : false,
+    "heights" : {
+        "door_top" : 8,
+        "vent" : 12,
+        "workstation" : 4,
+        "window" : {
+            "bottom" : 4,
+            "top" : 8
+        }
+    },
+    "files" : {
+        "input" : "computer_lab.txt",
+        "output" : "output_scenario.json"
+    }
+}
