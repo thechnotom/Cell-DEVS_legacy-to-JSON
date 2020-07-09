@@ -24,10 +24,14 @@ LENGTH = config["shape"][0]
 WIDTH = config["shape"][1]
 HEIGHT = config["shape"][2]
 
+finalShape = config["shape"]
+if (HEIGHT == 1):
+    finalShape = finalShape[:2]
+
 # Get the initial information to set up the JSON
 data = {
     "scenario" : {
-        "shape" : config["shape"],
+        "shape" : finalShape,
         "wrapped" : False,
         "default_delay" : "transport",
         "default_cell_type" : "CO2_cell",
@@ -141,16 +145,21 @@ for line in fileData:
 
     # Go through all Z values (floor and ceiling included)
     for z in range(0, HEIGHT):
+        tempCoord = []
+        if (HEIGHT == 1):
+            tempCoord = currCoord["coords"]
+        else:
+            tempCoord = currCoord["coords"] + [z]
         # If Z value is within cell's permitted values, add wall cell at that coordinate
-        if (z in range(heights[0], heights[1] + 1)):
-            coords.append({"coords" : currCoord["coords"] + [z],
+        if ((z in range(heights[0], heights[1] + 1)) or HEIGHT == 1):
+            coords.append({"coords" : tempCoord,
                            "conc" : currCoord["conc"],
                            "type" : currCoord["type"],
                            "counter" : currCoord["counter"]})
         # If Z value is not within cell's permitted values AND that cell requires walls
         # above/below (DOOR and WINDOW), add wall cell at that coordinate
         elif (currCoord["type"] == -400 or currCoord["type"] == -500):
-            coords.append({"coords" : currCoord["coords"] + [z],
+            coords.append({"coords" : tempCoord,
                            "conc" : 0,
                            "type" : -300,
                            "counter" : -1})
@@ -162,12 +171,13 @@ for coord in coords:
 # Add a floor and ceiling
 # This is fairly simple as it just fills in the entire
 # length by width rectangle at the floor and ceiling levels
-for l in range (0, LENGTH):
-    for w in range (0, WIDTH):
-        if (not containsCell(data, [l, w, 0])):
-            data["cells"].append(makeCell([l, w, 0], 0, -300, -1))  # floor
-        if (not containsCell(data, [l, w, HEIGHT - 1])):
-            data["cells"].append(makeCell([l, w, HEIGHT - 1], 0, -300, -1))  # ceiling
+if (HEIGHT > 1):
+    for l in range (0, LENGTH):
+        for w in range (0, WIDTH):
+            if (not containsCell(data, [l, w, 0])):
+                data["cells"].append(makeCell([l, w, 0], 0, -300, -1))  # floor
+            if (not containsCell(data, [l, w, HEIGHT - 1])):
+                data["cells"].append(makeCell([l, w, HEIGHT - 1], 0, -300, -1))  # ceiling
 
 # Convert the Python dictionary to a JSON string
 stringData = json.dumps(data, indent=4)
